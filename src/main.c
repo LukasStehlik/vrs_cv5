@@ -28,6 +28,7 @@ SOFTWARE.
 
 /* Includes */
 #include <stddef.h>
+#include <stdio.h>
 #include "stm32l1xx.h"
 #include "vrs_cv5.h"
 
@@ -47,16 +48,34 @@ SOFTWARE.
 **===========================================================================
 */
 uint16_t ADC_Value;
+uint8_t SendMode;
 
 
 int main(void)
 {
+	float pom;
+	char txt[10];
+
+	SendMode=1;
+
 	GPIO_Inicializacia();
 	ADC_Inicializacia();
+	USART_Inicializacia();
 
-	while (1)
+	while(1)
 	{
+		if(SendMode==0)
+		{
+			pom=ADC_Value*330/4096;
+			sprintf(txt,"%d.%dV",(int)pom/100,(int)pom%100);
+		}
+		else
+		{
+			sprintf(txt,"%d",ADC_Value);
+		}
 
+		SendString(txt);
+		Delay(1000000);
 	}
 	return 0;
 }

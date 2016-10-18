@@ -11,6 +11,7 @@
 void Delay(uint32_t cycles);
 void GPIO_Inicializacia();
 void ADC_Inicializacia();
-
+void USART_Inicializacia();
+void SendString(char *text);
 
 #endif /* VRS_CV5_H_ */
