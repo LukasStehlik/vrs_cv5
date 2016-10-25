@@ -47,8 +47,9 @@ SOFTWARE.
 **
 **===========================================================================
 */
-uint16_t ADC_Value;
-uint8_t SendMode;
+extern uint16_t ADC_Value;
+extern uint8_t SendMode;
+extern char* TX_Buffer;
 
 
 int main(void)
@@ -57,7 +58,6 @@ int main(void)
 	char txt[10];
 
 	SendMode=1;
-
 	GPIO_Inicializacia();
 	ADC_Inicializacia();
 	USART_Inicializacia();
@@ -67,14 +67,16 @@ int main(void)
 		if(SendMode==0)
 		{
 			pom=ADC_Value*330/4096;
-			sprintf(txt,"%d.%dV",(int)pom/100,(int)pom%100);
+			sprintf(txt,"%d.%dV\n\r",(int)pom/100,(int)pom%100);
 		}
 		else
 		{
-			sprintf(txt,"%d",ADC_Value);
+			sprintf(txt,"%d\n\r",ADC_Value);
 		}
 
-		SendString(txt);
+		TX_Buffer=txt;
+		USART_ITConfig(USART2,USART_IT_TXE,ENABLE);
+		//SendString(txt);
 		Delay(1000000);
 	}
 	return 0;

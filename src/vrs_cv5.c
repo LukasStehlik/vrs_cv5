@@ -13,8 +13,10 @@ GPIO_InitTypeDef gpioInit;
 NVIC_InitTypeDef nvicInit;
 ADC_InitTypeDef adcInit;
 USART_InitTypeDef usartInit;
-extern uint16_t ADC_Value;
-extern uint8_t SendMode;
+
+uint16_t ADC_Value;
+uint8_t SendMode;
+char* TX_Buffer;
 
 void Delay(uint32_t cycles)
 {
@@ -94,7 +96,9 @@ void USART_Inicializacia()
 	usartInit.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	usartInit.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_Init(USART2,&usartInit);
+
 	USART_ITConfig(USART2,USART_IT_RXNE,ENABLE);
+	//USART_ITConfig(USART2,USART_IT_TXE,ENABLE);
 
 	nvicInit.NVIC_IRQChannel=USART2_IRQn;
 	nvicInit.NVIC_IRQChannelCmd=ENABLE;
@@ -105,7 +109,7 @@ void USART_Inicializacia()
 	USART_Cmd(USART2,ENABLE);
 }
 
-void SendString(char *text)
+void SendString(char* text)
 {
 	uint8_t i=0;
 	while(text[i])
@@ -114,10 +118,6 @@ void SendString(char *text)
 		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)==RESET);
 		i++;
 	}
-	USART_SendData(USART2,'\n');
-	while(USART_GetFlagStatus(USART2,USART_FLAG_TC)==RESET);
-	USART_SendData(USART2,'\r');
-	while(USART_GetFlagStatus(USART2,USART_FLAG_TC)==RESET);
 }
 
 void ADC1_IRQHandler()
@@ -141,5 +141,15 @@ void USART2_IRQHandler()
 		{
 			SendMode=!SendMode;
 		}
+	}
+
+	if(USART_GetFlagStatus(USART2,USART_FLAG_TXE))
+	{
+		if((*TX_Buffer)!=0)
+		{
+			USART_SendData(USART2,*TX_Buffer);
+			TX_Buffer++;
+		}
+		else USART_ITConfig(USART2,USART_IT_TXE,DISABLE);
 	}
 }
